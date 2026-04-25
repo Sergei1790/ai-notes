@@ -199,8 +199,15 @@ git push -u origin main
 
 ## Step 10 — Deploy to Vercel
 
-1. Go to vercel.com → Add New → Project → Import Git Repository
-2. Select your repo → add Environment Variables before deploying:
+1. In package.json, add a postinstall script:
+  ```
+  "scripts": {
+    ...
+    "postinstall": "prisma generate"
+  }
+  ```
+2. Go to vercel.com → Add New → Project → Import Git Repository (Adjust Github Permission)
+3. Select your repo → add Environment Variables before deploying:
    - `DATABASE_URL`
    - `AUTH_SECRET`
    - `AUTH_GITHUB_ID`
