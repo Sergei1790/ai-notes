@@ -11,7 +11,7 @@ export async function getNotes() {
     
     return await prisma.note.findMany({
         where: { userId: session.user.id },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'asc' },
     });
 }
 
@@ -24,6 +24,20 @@ export async function createNote(formData: FormData) {
 
     await prisma.note.create({
         data: {title, content, userId: session.user.id},
+    });
+    revalidatePath('/');
+}
+
+export async function editNote(noteId: number, formData: FormData){
+    const session = await auth();
+    if(!session?.user?.id) throw new Error ('Not authenticated');
+
+    const title = formData.get('title') as string;
+    const content = formData.get('content') as string;
+    
+    await prisma.note.update({
+        where: {id: noteId, userId: session.user.id},
+        data: {title, content},
     });
     revalidatePath('/');
 }
