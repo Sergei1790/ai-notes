@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import {Note} from '@/generated/prisma/client';
 import {deleteNote, generateTags} from '@/lib/actions';
 import EditNoteButton from '@/components/EditNoteButton';
+import SubmitButton from '@/components/SubmitButton';
 
 export default function NoteCard({note} : { note: Note}){
     const [streamingSummary, setStreamingSummary] = useState('');
@@ -59,14 +60,20 @@ export default function NoteCard({note} : { note: Note}){
             <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
                 <EditNoteButton note={note} />
                 <form action={deleteNote.bind(null, note.id)}>
-                    <button type="submit" className="text-xs px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-300 transition-colors cursor-pointer">
+                    <SubmitButton
+                        pendingText="Deleting..."
+                        className="text-xs px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-300 transition-colors cursor-pointer"
+                    >
                         Delete
-                    </button>
+                    </SubmitButton>
                 </form>
                 <form action={generateTags.bind(null, note.id)}>
-                    <button type="submit" className="cursor-pointer text-xs px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors">
+                    <SubmitButton
+                        pendingText="Generating..."
+                        className="cursor-pointer text-xs px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors"
+                    >
                         Generate Tags
-                    </button>
+                    </SubmitButton>
                 </form>
                 <button onClick={handleGenerateSummary} disabled={isStreaming} className="cursor-pointer text-xs px-3 py-1.5 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors disabled:opacity-50">
                     {isStreaming ? 'Generating...' : 'Generate Summary'}
