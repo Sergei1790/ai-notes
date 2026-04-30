@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import {Note} from '@/generated/prisma/client';
 import {deleteNote, generateTags} from '@/lib/actions';
 import EditNoteButton from '@/components/EditNoteButton';
+import DeleteNoteButton from '@/components/DeleteNoteButton';
 import SubmitButton from '@/components/SubmitButton';
 
 export default function NoteCard({note} : { note: Note}){
@@ -59,14 +60,7 @@ export default function NoteCard({note} : { note: Note}){
 
             <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
                 <EditNoteButton note={note} />
-                <form action={deleteNote.bind(null, note.id)}>
-                    <SubmitButton
-                        pendingText="Deleting..."
-                        className="text-xs px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-300 transition-colors cursor-pointer"
-                    >
-                        Delete
-                    </SubmitButton>
-                </form>
+                <DeleteNoteButton note={note} />
                 <form action={generateTags.bind(null, note.id)}>
                     <SubmitButton
                         pendingText="Generating..."
