@@ -5,6 +5,12 @@ import {revalidatePath} from 'next/cache';
 import {auth} from '@/auth';
 import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY});
+
+export type ActionState = {
+    ok: boolean;
+    error?: string;
+};
+
 export async function getNotes() {
     const session = await auth();
     if (!session?.user?.id) throw new Error('Not authenticated');
@@ -15,79 +21,124 @@ export async function getNotes() {
     });
 }
 
-export async function createNote(formData: FormData) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Not authenticated');
+export async function createNote(
+    _prevState: ActionState,
+    formData: FormData
+): Promise<ActionState> {
+    try{
+        const session = await auth();
+        if (!session?.user?.id){
+            return {ok:false, error: 'Not authenticated'};
+        } 
+    
+        const title = formData.get('title') as string;
+        const content = formData.get('content') as string;
 
-    const title = formData.get('title') as string;
-    const content = formData.get('content') as string;
+        if(!title || !content) {
+            return {ok: false, error: 'Title and content are required'};
+        }
 
-    await prisma.note.create({
-        data: {title, content, userId: session.user.id},
-    });
-    revalidatePath('/');
+        await prisma.note.create({
+            data: {title, content, userId: session.user.id},
+        });
+        revalidatePath('/');
+        return {ok: true};
+    } catch (err) {
+        console.error('createNote failed:', err);
+        return { ok: false, error: 'Failed to create note. Try again.' };
+    }
 }
 
-export async function editNote(noteId: number, formData: FormData){
-    const session = await auth();
-    if(!session?.user?.id) throw new Error ('Not authenticated');
+export async function editNote(
+    noteId: number,
+    _prevState: ActionState,
+    formData: FormData
+): Promise<ActionState> {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return { ok: false, error: 'Not authenticated' };
+        }
 
-    const title = formData.get('title') as string;
-    const content = formData.get('content') as string;
-    
-    await prisma.note.update({
-        where: {id: noteId, userId: session.user.id},
-        data: {title, content},
-    });
-    revalidatePath('/');
+        const title = formData.get('title') as string;
+        const content = formData.get('content') as string;
+
+        if (!title || !content) {
+            return { ok: false, error: 'Title and content are required' };
+        }
+        
+        await prisma.note.update({
+            where: {id: noteId, userId: session.user.id},
+            data: {title, content},
+        });
+        revalidatePath('/');
+        return { ok: true };
+    } catch (err) {
+        console.error('editNote failed:', err);
+        return { ok: false, error: 'Failed to update note. Try again.' };
+    }
 }
 
 export async function deleteNote(id: number) {
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Not authenticated');
-
-    await prisma.note.delete({where: {id}});
-    revalidatePath('/');
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error('Not authenticated');
+        await prisma.note.delete({ where: { id, userId: session.user.id } });
+        revalidatePath('/');
+    } catch (err) {
+        console.error('deleteNote failed:', err);
+        throw err;
+    }
 }
 
 export async function generateSummary(noteId: number){
-    const session = await auth();
-    if (!session?.user?.id) throw new Error('Not authenticated');
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error('Not authenticated');
 
-    const note = await prisma.note.findFirst({
-        where: { id : noteId, userId: session.user.id },
-    })
-    if (!note) throw new Error('Note not found');
-    const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Summarize this note in 1-2 sentences:\n\n${note.content}`,
-    });
-    
-    await prisma.note.update({
-        where: { id : noteId  },
-        data: { summary: response.text },
-    });
-    revalidatePath('/');
+        const note = await prisma.note.findFirst({
+            where: { id: noteId, userId: session.user.id },
+        });
+        if (!note) throw new Error('Note not found');
+
+        const response = await ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: `Summarize this note in 1-2 sentences:\n\n${note.content}`,
+        });
+
+        await prisma.note.update({
+            where: { id: noteId },
+            data: { summary: response.text },
+        });
+        revalidatePath('/');
+    } catch (err) {
+        console.error('generateSummary failed:', err);
+        throw err;
+    }
 }
 
 export async function generateTags(noteId: number){
-    const session = await auth();
-    if(!session?.user?.id) throw new Error('Not authenticated');
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error('Not authenticated');
 
-    const note = await prisma.note.findFirst({
-        where: {id: noteId, userId: session.user.id}
-    });
-    if (!note) throw new Error('Note not found');
+        const note = await prisma.note.findFirst({
+            where: { id: noteId, userId: session.user.id },
+        });
+        if (!note) throw new Error('Note not found');
 
-    const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Generate 3 tags for this note. Return only comma-separated lowercase keywords, no other text.\n\n${note.content}`,
-    });
+        const response = await ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: `Generate 3 tags for this note. Return only comma-separated lowercase keywords, no other text.\n\n${note.content}`,
+        });
 
-    await prisma.note.update({
-        where: {id: noteId},
-        data: { tags: response.text },
-    });
-
-    revalidatePath('/');
+        await prisma.note.update({
+            where: { id: noteId },
+            data: { tags: response.text },
+        });
+        revalidatePath('/');
+    } catch (err) {
+        console.error('generateTags failed:', err);
+        throw err;
+    }
 }
