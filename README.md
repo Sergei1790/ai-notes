@@ -3,7 +3,7 @@
 Smart note-taking with AI-powered summaries and tags.
 Built with Next.js 15, TypeScript, Prisma, and the Gemini API.
 
-**Live demo:** https://ai-notes-sable.vercel.app
+**Live demo:** https://ai-notes-omega-lime.vercel.app/
 
 ![screenshot](./public/screenshot.png)
 
