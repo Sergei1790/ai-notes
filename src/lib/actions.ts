@@ -6,10 +6,10 @@ import {auth} from '@/auth';
 import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY});
 
-export type ActionState = {
-    ok: boolean;
-    error?: string;
-};
+export type ActionState = 
+    | { ok: true} 
+    | { ok: false; error: string };
+
 
 export async function getNotes() {
     const session = await auth();

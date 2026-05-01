@@ -4,7 +4,7 @@ import {Note} from '@/generated/prisma/client';
 import {editNote, type ActionState} from '@/lib/actions';
 import {useActionState, useState} from 'react';
 
-const initialState: ActionState = {ok: false};
+const initialState: ActionState = { ok: false, error: '' };
 
 export default function EditNoteButton({note}: {note: Pick<Note, 'id' | 'title' | 'content'>}) {
     const [editing, setEditing] = useState(false);
@@ -26,7 +26,7 @@ export default function EditNoteButton({note}: {note: Pick<Note, 'id' | 'title' 
                         <h2 className="font-semibold text-foreground text-lg">Edit Note</h2>
                         <input name="title" defaultValue={note.title} className="border border-white/10 bg-bg text-foreground rounded-xl px-3 py-2 w-full focus:outline-none focus:border-primary/60" />
                         <textarea name="content" defaultValue={note.content} className="border border-white/10 bg-bg text-foreground rounded-xl px-3 py-2 w-full min-h-[120px] focus:outline-none focus:border-primary/60" />
-                        {state.error && <p className="text-sm text-red-400">{state.error}</p>}
+                        {!state.ok && state.error && <p className="text-sm text-red-400">{state.error}</p>}
                         <div className="flex gap-2 items-center">
                             <button type="submit" disabled={isPending} className="bg-primary hover:bg-primary/80 text-white text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer disabled:opacity-50">
                                 {isPending ? 'Saving...' : 'Save'}
