@@ -4,6 +4,7 @@ Smart note-taking with AI-powered summaries and tags.
 Built with Next.js 15, TypeScript, Prisma, and the Gemini API.
 
 **Live demo:** https://ai-notes-omega-lime.vercel.app/
+No signup needed - click **Try the demo** on the sign-in page.
 
 ![screenshot](./public/screenshot.png)
 
@@ -14,6 +15,8 @@ Built with Next.js 15, TypeScript, Prisma, and the Gemini API.
 - **AI summary** generation with streaming responses (Gemini)
 - **AI tag** generation
 - React 19 server actions with `useActionState` for inline form errors
+- **Demo mode** - one-click demo login with seeded data, auto-reset daily via Vercel cron
+- Unit tests (Vitest) run in CI (GitHub Actions)
 - Confirm dialog on delete
 - Mobile-responsive design with Tailwind v4
 - Custom error fallback page (`error.tsx`)
@@ -26,7 +29,8 @@ Built with Next.js 15, TypeScript, Prisma, and the Gemini API.
 - **Auth:** NextAuth v5
 - **AI:** Google Gemini (`@google/genai`)
 - **Styling:** Tailwind CSS v4
-- **Deploy:** Vercel
+- **Tests:** Vitest + React Testing Library
+- **Deploy / CI:** Vercel + GitHub Actions
 
 ## Local setup
 
